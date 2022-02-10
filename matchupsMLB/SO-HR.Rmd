@@ -1,0 +1,85 @@
+---
+title: "R programing's greatest strength --> Vignettes"
+output: html_notebook
+---
+```{r}
+browseVignettes("Lahman")
+```
+
+```{r}
+```
+
+```{r}
+library(Lahman)
+library(ggplot2)
+library(dplyr)
+library(car)
+```
+
+
+```{r}
+data('Batting', package = 'Lahman')
+str(Batting)
+```
+
+
+```{r}
+Batting <- Batting %>% 
+  select(yearID, AB, SO, HR) %>% 
+  group_by(yearID) %>% 
+  summarise_each(funs(sum))
+```
+
+
+```{r}
+FullBatting <- Batting %>% 
+  filter(yearID >= 1950) %>% 
+  mutate(SO_rate = (SO/AB)*100, HR_rate = (HR/AB)*100)
+```
+
+
+```{r}
+some(FullBatting)
+```
+
+```{r}
+dim(FullBatting)
+```
+
+```{r}
+sum(FullBatting$SO)
+```
+
+```{r}
+mean(FullBatting$SO_rate)
+```
+
+```{r}
+sum(FullBatting$HR)
+```
+
+```{r}
+mean(FullBatting$HR_rate)
+```
+
+```{r}
+corr <- cor.test(FullBatting$SO_rate, FullBatting$HR_rate)
+corr
+```
+
+```{r}
+Model_Totals <-  lm(SO_rate~HR_rate, data = FullBatting)
+summary(Model_Totals)
+```
+
+```{r}
+plot <- ggplot(FullBatting, aes(x=SO_rate, y=HR_rate)) +
+  geom_point() +
+  xlab('Strikeout Rate') +
+  ylab('Home Run Rate') +
+  ggtitle('Realtionship Between Strikeouts and Home Runs')
+
+plot + stat_smooth(method = 'lm')
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
