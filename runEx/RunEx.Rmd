@@ -1,0 +1,111 @@
+---
+title: "Baseball analytics in R"
+output: html_notebook
+---
+
+In this article, we are going to recreate the Runs Expectancy Matrix as laid out in *Analyzing-Baseball-Data-with-R*
+
+Measuring run expectancy in Baseball is a major tool in the sport-statisticians toolbox.
+
+Our first point of order is to download the data. 
+
+
+
+```{r}
+files <-list.files(path = 'data/2021eve/', pattern = '*.EV(N|A)')
+files
+```
+
+```{r}
+create.csv.file=function(year){
+  # http://chadwick.sourceforge.net/doc/cwevent.html#cwtools-cwevent
+  # shell("cwevent -y 2000 2000TOR.EVA > 2000TOR.bev")
+  wd = getwd()
+  setwd("data/2021eve/")
+  if (.Platform$OS.type == "unix"){
+  system(paste(paste("cwevent -y", year, "-f 0-96"), 
+              paste(year,"*.EV*",sep=""),
+              paste("> all", year, ".csv", sep="")))} else {
+  shell(paste(paste("cwevent -y", year, "-f 0-96"), 
+              paste(year,"*.EV*",sep=""),
+              paste("> all", year, ".csv", sep="")))              
+              }
+  setwd(wd)
+}
+create.csv.file(2021)
+```
+
+```{r}
+library(Lahman)
+library(ggplot2)
+library(dplyr)
+library(car)
+```
+
+
+```{r}
+data('Batting', package = 'Lahman')
+str(Batting)chrome://vivaldi-webui/startpage?section=Speed-dials&background-color=#2f2f2f
+```
+
+
+```{r}
+Batting <- Batting %>% 
+  select(yearID, AB, SO, HR) %>% 
+  group_by(yearID) %>% 
+  summarise_each(funs(sum))
+```
+
+
+```{r}
+FullBatting <- Batting %>% 
+  filter(yearID >= 1950) %>% 
+  mutate(SO_rate = (SO/AB)*100, HR_rate = (HR/AB)*100)
+```
+
+
+```{r}
+some(FullBatting)
+```
+
+```{r}
+dim(FullBatting)
+```
+
+```{r}
+sum(FullBatting$SO)
+```
+
+```{r}
+mean(FullBatting$SO_rate)
+```
+
+```{r}
+sum(FullBatting$HR)
+```
+
+```{r}
+mean(FullBatting$HR_rate)
+```
+
+```{r}
+corr <- cor.test(FullBatting$SO_rate, FullBatting$HR_rate)
+corr
+```
+
+```{r}
+Model_Totals <-  lm(SO_rate~HR_rate, data = FullBatting)
+summary(Model_Totals)
+```
+
+```{r}
+plot <- ggplot(FullBatting, aes(x=SO_rate, y=HR_rate)) +
+  geom_point() +
+  xlab('Strikeout Rate') +
+  ylab('Home Run Rate') +
+  ggtitle('Realtionship Between Strikeouts and Home Runs')
+
+plot + stat_smooth(method = 'lm')
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
