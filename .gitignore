@@ -145,3 +145,6 @@ pdfs/
 .python-version
 .Rhistory
 .Renviron
+
+
+runEx/data/private/
