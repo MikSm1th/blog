@@ -1,2 +1,2 @@
-write("./code/pi.jl", In[IJulia.n])
+## \pi
 π
